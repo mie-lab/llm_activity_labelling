@@ -23,21 +23,28 @@ WEEKDAYS = [
 ]
 
 
-def prompt_pois(closest_pois):
+def prompt_pois(closest_pois, skip_unnamed=True, save_to_file=None):
+    """Design prompt that lists the closest POIs to a location."""
+    
     text_for_activity = "Nearby OSM points of interests are:"
 
-    # print(f"========== Point labelled as {row_of_activity['label']}  ======= ") # (coords: {row_of_activity['geometry']})
-    for k in range(len(closest_pois)):
-        close_poi = closest_pois[k]
-        poi_type, name = pois.iloc[close_poi]["poi_type"], pois.iloc[close_poi]["name"]
-        # print(pois.iloc[close_poi]["address"])
-        dist = distance_of_closest[i][k]
-        text_for_activity += f"\n{name} (type: {poi_type}) with distance {round(dist)}m,"
-    print(text_for_activity)
+    for i, row in closest_pois.iterrows():
+        poi_type, name = row["amenity_type"], row["name"]
+        if skip_unnamed and name == "Unnamed":
+            continue
+        distance = row.get("distance", 0)
+        details = row["details"]
 
-    # # to save the prompt to a file:
-    # with open(os.path.join(out_dir, f"prompt_{i}.txt"), 'w') as output:
-    #     output.write(text_for_activity)
+        opening = ""
+        if row["opening_hours"] != "unknown":
+            opening = f", opened {row['opening_hours']}"
+        
+        text_for_activity += f"\n{name} (type:{poi_type} {details}{opening}) {round(distance)}m away,".replace("Unknown", "")
+
+    # to save the prompt to a file:
+    if save_to_file is not None:
+        with open(save_to_file, 'w') as output:
+            output.write(text_for_activity)
 
     return text_for_activity[:-1]  # remove comma
 

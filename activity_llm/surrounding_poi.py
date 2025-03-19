@@ -1,6 +1,7 @@
 import pandas as pd
 import math
 import overpy
+from geopy.distance import geodesic
 
 
 class SurroundingPOI:
@@ -56,12 +57,18 @@ class SurroundingPOI:
                 + node.tags.get("sport", "")
             ).strip()
 
+            # Calculate distance
+            node_location = (float(node.lat), float(node.lon))
+            original_location = (latitude, longitude)
+            distance = geodesic(original_location, node_location).meters
+
             result_return.append(
                 {
                     "name": node.tags.get("name", "Unnamed"),
                     "amenity_type": node.tags.get("amenity", "Unknown"),
                     "details": details,
                     "opening_hours": node.tags.get("opening_hours", "unknown"),
+                    "distance": distance,
                 }
             )
 

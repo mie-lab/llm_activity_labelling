@@ -17,7 +17,7 @@ class QueryLLM:
         self.poi_finder = poi_finder
         self.base_prompt = BASE_PROMPT
 
-    def __call__(self, locations):
+    def __call__(self, locations, output_dir):
         results = {}
         for row in locations.iterrows():
             lon = row.geometry.x
@@ -38,6 +38,7 @@ class QueryLLM:
 
             print(response)
 
+            # handle the response
             full_res = response.content
             try:
                 place_res = full_res.split("Place:")[1].split("Type:")[0].replace("\n", "")
@@ -56,6 +57,5 @@ class QueryLLM:
                 }
             )
 
-            with open("1les_temps_article/results_llm.json", "w") as outfile:
+            with open(os.path.join(output_dir, "results_llm.json"), "w") as outfile:
                 json.dump(results, outfile)
-                # print(response)
