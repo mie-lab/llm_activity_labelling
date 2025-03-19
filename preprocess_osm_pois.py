@@ -70,11 +70,13 @@ for city in ["Genf", "Paris"]:  #  ["Zuerich", "newyorkcity", "tokyo"]:
     pois_simple["poi_type"] = pois_simple["amenity"]
     pois_simple["poi_type"] = pois_simple["poi_type"].fillna(pois_simple["leisure"])
     pois_simple.loc[
-        pd.isna(pois_simple["poi_type"]) & (pois_simple["tags"].str.contains("healthcare").fillna(False)), "poi_type"
+        pd.isna(pois_simple["poi_type"]) & (pois_simple["tags"].str.contains("healthcare").fillna(False)),
+        "poi_type",
     ] = "healthcare"
     # add museums
     pois_simple.loc[
-        pd.isna(pois_simple["poi_type"]) & (pois_simple["name"].str.contains("museum").fillna(False)), "poi_type"
+        pd.isna(pois_simple["poi_type"]) & (pois_simple["name"].str.contains("museum").fillna(False)),
+        "poi_type",
     ] = "museum"
     pois_simple["poi_type"] = pois_simple["poi_type"].fillna(pois_simple["religion"])
     pois_simple["poi_type"] = pois_simple["poi_type"].fillna(pois_simple["public_transport"])
@@ -84,13 +86,19 @@ for city in ["Genf", "Paris"]:  #  ["Zuerich", "newyorkcity", "tokyo"]:
     # reduce to relevant columns and dropn nans
     prev_len = len(pois_simple)
     pois_simple = pois_simple[["id", "lon", "lat", "geometry", "poi_type", "name"]].dropna()
-    print("Number of POIs that are dropped because they cannot be assigned a poi_type:", prev_len - len(pois_simple))
+    print(
+        "Number of POIs that are dropped because they cannot be assigned a poi_type:",
+        prev_len - len(pois_simple),
+    )
 
     # Add my labels
     prev_len = len(pois_simple)
     pois_simple["poi_my_label"] = pois_simple["poi_type"].map(osm_poi_mapping)
     # pois_simple = pois_simple[~pd.isna(pois_simple["poi_my_label"])]
-    print("Number of POIs that are dropped because they cannot be assigned a label:", prev_len - len(pois_simple))
+    print(
+        "Number of POIs that are dropped because they cannot be assigned a label:",
+        prev_len - len(pois_simple),
+    )
 
     # save
     if city == "Zuerich":

@@ -41,7 +41,12 @@ for i in range(33):
         type_res = full_res.split("Type:")[1].split("Reasoning:")[0].replace("\n", "")
     except:
         type_res = "None"
-    results[i] = {"place_llm": place_res, "label_llm": type_res, "response_llm": full_res, "prompt_llm": full_prompt}
+    results[i] = {
+        "place_llm": place_res,
+        "label_llm": type_res,
+        "response_llm": full_res,
+        "prompt_llm": full_prompt,
+    }
 
     with open("1les_temps_article/results_llm.json", "w") as outfile:
         json.dump(results, outfile)
