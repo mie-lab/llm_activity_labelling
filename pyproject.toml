@@ -23,7 +23,8 @@ dependencies = [
     "notebook>=6.4.0",
     "geopandas",
     "shapely",
-    "trackintel"
+    "trackintel",
+    "langchain-openai"
 ]
 
 [tool.setuptools.packages]

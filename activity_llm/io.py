@@ -110,8 +110,6 @@ def parse_kml(kml_path: str):
                     "tripleg",
                 ]
             )
-        else:
-            print(name.text, "point is none")
 
     # Create and return GeoDataFrame
     gdf = gpd.GeoDataFrame(
@@ -160,5 +158,7 @@ def load_trackintel_from_kml_dir(kml_path: str):
     tpls = ti.io.from_geopandas.read_triplegs_gpd(
         valid_triplegs.drop(["distance", "type"], axis=1), geom_col="geometry", tz="utc"
     )
+    print("Loaded ", len(sp), "staypoints and", len(tpls), "triplegs.")
+    print(f"(removed {len(triplegs) - len(valid_triplegs)} invalid geometries)")
 
     return sp.set_index("id"), tpls.set_index("id")

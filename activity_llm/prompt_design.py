@@ -10,7 +10,7 @@ BASE_PROMPT = "You are a system to find out what places a person visited. We onl
  4. Activities during night hours are most likely to be hotels or sleeping at a friends place. Home and work locations were filtered out prior.\
  Here is the data for the stay point of the person: "
 
-PROMPT_FORMAT = '.\nWhat place did the person visit or what activity did they do? Please answer with "Place: <output> Type: <output> Reasoning: <reasoning>" '
+PROMPT_FORMAT = 'What place did the person visit or what activity did they do? Please answer with "Place: <output> Type: <output> Reasoning: <reasoning>" '
 
 WEEKDAYS = [
     "Monday",
@@ -48,7 +48,7 @@ def prompt_pois(closest_pois: pd.DataFrame, skip_unnamed: bool = True, save_to_f
         with open(save_to_file, "w") as output:
             output.write(text_for_activity)
 
-    return text_for_activity[:-1]  # remove comma
+    return text_for_activity[:-1] + ".\n"  # remove comma
 
 
 def prompt_for_activity(
@@ -59,7 +59,7 @@ def prompt_for_activity(
     existing_label: str = None,
 ):
     text_for_activity = f'Detected at coordinates {round(lon, 3), round(lat, 3)} on {WEEKDAYS[time_start.weekday()]}, \
-        {time_start.strftime("%Y/%m/%d from %I:%M %p")} to {time_end.strftime(" to %I:%M %p")}'
+{time_start.strftime("%Y/%m/%d from %I:%M %p")} {time_end.strftime(" to %I:%M %p")}.'
     if existing_label is not None:
-        text_for_activity += f'This point was already labelled as "{existing_label}" (label not reliable!).'
-    return text_for_activity
+        text_for_activity += f' This point was already labelled as "{existing_label}" (label not reliable!).'
+    return text_for_activity + "\n"

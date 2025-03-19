@@ -29,4 +29,4 @@ def find_basic_locations(
         address = get_address_from_coords(loc.center.y, loc.center.x)
         home_work_result.append({"location_id": location_id, "purpose": purpose, "address": address})
 
-    return sp_w_purpose, pd.DataFrame(home_work_result)
+    return sp_w_purpose, locs, pd.DataFrame(home_work_result)

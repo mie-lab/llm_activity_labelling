@@ -1,9 +1,10 @@
 import json
 import os
+import pandas as pd
 from langchain_openai import ChatOpenAI
 
-from llm_privacy.surrounding_poi import SurroundingPOI
-from llm_privacy.prompt_design import (
+from activity_llm.surrounding_poi import SurroundingPOI
+from activity_llm.prompt_design import (
     BASE_PROMPT,
     PROMPT_FORMAT,
     prompt_pois,
@@ -12,50 +13,57 @@ from llm_privacy.prompt_design import (
 
 
 class QueryLLM:
-    def __init__(self, poi_finder: SurroundingPOI, model="gpt-4o"):
+    def __init__(self, poi_finder: SurroundingPOI, model="gpt-4o", max_pois=15):
         self.llm = ChatOpenAI(model=model)
         self.poi_finder = poi_finder
         self.base_prompt = BASE_PROMPT
 
-    def __call__(self, locations, output_dir):
-        results = {}
-        for row in locations.iterrows():
+        self.max_pois = max_pois
+
+    def __call__(self, locations, output_dir: str = None):
+        llm_results = []
+        for sp_id, row in locations.iterrows():
             lon = row.geometry.x
             lat = row.geometry.y
 
             # Find the closest POIs
-            closest_pois = self.poi_finder(lon, lat)
+            closest_pois = self.poi_finder(lon, lat).sort_values("distance").head(self.max_pois)
             # Prompt defining the surrounding POIs
             pois_prompt = prompt_pois(closest_pois)
 
             # Basic prompt where and when the activity took place
-            time_start = row.time_start
-            person_prompt = prompt_for_activity(lon, lat, time_start)
+            person_prompt = prompt_for_activity(lon, lat, row["started_at"], row["finished_at"])
 
             full_prompt = self.base_prompt + person_prompt + pois_prompt + PROMPT_FORMAT
 
+            # Query the LLM
             response = self.llm.invoke(full_prompt)
-
-            print(response)
 
             # handle the response
             full_res = response.content
             try:
-                place_res = full_res.split("Place:")[1].split("Type:")[0].replace("\n", "")
+                place_res = full_res.split("Place:")[1].split("Type:")[0].replace("\n", "").strip()
             except:
                 place_res = "None"
             try:
-                type_res = full_res.split("Type:")[1].split("Reasoning:")[0].replace("\n", "")
+                type_res = full_res.split("Type:")[1].split("Reasoning:")[0].replace("\n", "").strip()
             except:
                 type_res = "None"
-            results.append(
+
+            # add to dictionary
+            llm_results.append(
                 {
+                    "sp_id": sp_id,
                     "place_llm": place_res,
                     "label_llm": type_res,
                     "response_llm": full_res,
                     "prompt_llm": full_prompt,
                 }
             )
+            print(f"RESULT FOR SP {sp_id}:", llm_results[-1])
+            print()
 
-            with open(os.path.join(output_dir, "results_llm.json"), "w") as outfile:
-                json.dump(results, outfile)
+            if output_dir is not None:
+                with open(os.path.join(output_dir, "results_llm.json"), "w") as outfile:
+                    json.dump(llm_results, outfile)
+        return pd.DataFrame(llm_results)
