@@ -21,9 +21,9 @@ dependencies = [
     "matplotlib>=3.5.0",
     "pandas>=1.5.3",
     "notebook>=6.4.0",
-    "xml",
     "geopandas",
     "shapely",
+    "trackintel"
 ]
 
 [tool.setuptools.packages]

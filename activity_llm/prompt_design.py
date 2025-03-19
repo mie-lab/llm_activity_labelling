@@ -23,9 +23,9 @@ WEEKDAYS = [
 ]
 
 
-def prompt_pois(closest_pois, skip_unnamed=True, save_to_file=None):
+def prompt_pois(closest_pois: pd.DataFrame, skip_unnamed: bool = True, save_to_file: str = None):
     """Design prompt that lists the closest POIs to a location."""
-    
+
     text_for_activity = "Nearby OSM points of interests are:"
 
     for i, row in closest_pois.iterrows():
@@ -38,23 +38,25 @@ def prompt_pois(closest_pois, skip_unnamed=True, save_to_file=None):
         opening = ""
         if row["opening_hours"] != "unknown":
             opening = f", opened {row['opening_hours']}"
-        
-        text_for_activity += f"\n{name} (type:{poi_type} {details}{opening}) {round(distance)}m away,".replace("Unknown", "")
+
+        text_for_activity += f"\n{name} (type:{poi_type} {details}{opening}) {round(distance)}m away,".replace(
+            "Unknown", ""
+        )
 
     # to save the prompt to a file:
     if save_to_file is not None:
-        with open(save_to_file, 'w') as output:
+        with open(save_to_file, "w") as output:
             output.write(text_for_activity)
 
     return text_for_activity[:-1]  # remove comma
 
 
 def prompt_for_activity(
-    lon,
-    lat,
+    lon: float,
+    lat: float,
     time_start: datetime.datetime,
     time_end: datetime.datetime,
-    existing_label=None,
+    existing_label: str = None,
 ):
     text_for_activity = f'Detected at coordinates {round(lon, 3), round(lat, 3)} on {WEEKDAYS[time_start.weekday()]}, \
         {time_start.strftime("%Y/%m/%d from %I:%M %p")} to {time_end.strftime(" to %I:%M %p")}'

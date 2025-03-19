@@ -1,7 +1,10 @@
+import os
+import numpy as np
 import geopandas as gpd
 import pandas as pd
 from xml.etree import ElementTree as ET
 from shapely.geometry import Point
+import trackintel as ti
 import shapely
 from datetime import datetime
 
@@ -125,3 +128,37 @@ def parse_kml(kml_path: str):
         crs="EPSG:4326",
     )
     return gdf
+
+
+def load_trackintel_from_kml_dir(kml_path: str):
+    all_tracks = []
+    for file in sorted(os.listdir(kml_path)):
+        kml_file_path = os.path.join(kml_path, file)
+        gdf = parse_kml(kml_file_path)
+        all_tracks.append(gdf)
+
+    # combine all tracks
+    all_tracks = pd.concat(all_tracks)
+    all_tracks["id"] = np.arange(len(all_tracks))
+
+    # convert to geodataframe
+    all_tracks = gpd.GeoDataFrame(all_tracks, geometry="geometry")
+
+    # change attributes to fit trackintel format
+    trackintel_tracks = all_tracks.rename({"time_start": "started_at", "time_end": "finished_at"}, axis=1)
+    trackintel_tracks["user_id"] = 1
+
+    # import staypoints into trackintel
+    staypoints = trackintel_tracks[trackintel_tracks["type"] == "staypoint"]
+    sp = ti.io.from_geopandas.read_staypoints_gpd(
+        staypoints.drop(["distance", "type"], axis=1), geom_col="geometry", tz="utc"
+    )
+
+    # import triplegs into trackintel
+    triplegs = trackintel_tracks[trackintel_tracks["type"] != "staypoint"]
+    valid_triplegs = triplegs[triplegs.geometry.is_valid]
+    tpls = ti.io.from_geopandas.read_triplegs_gpd(
+        valid_triplegs.drop(["distance", "type"], axis=1), geom_col="geometry", tz="utc"
+    )
+
+    return sp.set_index("id"), tpls.set_index("id")
