@@ -22,6 +22,7 @@ class QueryLLM:
 
     def __call__(self, locations, output_dir: str = None):
         llm_results = []
+        print(f"Querying LLM for {len(locations)} locations...")
         for sp_id, row in locations.iterrows():
             lon = row.geometry.x
             lat = row.geometry.y
@@ -60,8 +61,7 @@ class QueryLLM:
                     "prompt_llm": full_prompt,
                 }
             )
-            print(f"RESULT FOR SP {sp_id}:", llm_results[-1])
-            print()
+            print(f"\nRESULT FOR SP {sp_id}:", llm_results[-1]["place_llm"], llm_results[-1]["label_llm"])
 
             if output_dir is not None:
                 with open(os.path.join(output_dir, "results_llm.json"), "w") as outfile:
