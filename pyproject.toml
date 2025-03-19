@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "activity_llm"
+version = "0.1.0"
+description = "LLM-based activity recognition"
+license = { file = "LICENSE" }
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+keywords = ["geoprivacy", "mobility", "activity"]
+dependencies = [
+    "numpy>=1.21.0",
+    "overpy",
+    "matplotlib>=3.5.0",
+    "pandas>=1.5.3",
+    "notebook>=6.4.0",
+    "xml",
+    "geopandas",
+    "shapely",
+]
+
+[tool.setuptools.packages]
+find = {}
